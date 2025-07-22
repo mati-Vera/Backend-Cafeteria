@@ -1,18 +1,28 @@
 package com.mati.curso.springboot.webapp.backendcafeteria.controllers;
 
+import com.mati.curso.springboot.webapp.backendcafeteria.entity.MenuItem;
+import com.mati.curso.springboot.webapp.backendcafeteria.service.MenuItemService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/private")
 public class PrivateController {
+
+    private final MenuItemService menuItemService;
+
+    @Autowired
+    public PrivateController(MenuItemService menuItemService) {
+        this.menuItemService = menuItemService;
+    }
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> privateRoute(@AuthenticationPrincipal Jwt jwt) {
@@ -37,5 +47,41 @@ public class PrivateController {
         response.put("name", jwt.getClaimAsString("name"));
         response.put("picture", jwt.getClaimAsString("picture"));
         return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/menu")
+    public ResponseEntity<List<MenuItem>> getAllMenuItems() {
+        return ResponseEntity.ok(menuItemService.findAll());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/menu")
+    public ResponseEntity<MenuItem> createMenuItem(@RequestBody MenuItem menuItem) {
+        MenuItem created = menuItemService.save(menuItem);
+        return ResponseEntity.ok(created);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/menu/{id}")
+    public ResponseEntity<MenuItem> updateMenuItem(@PathVariable Long id, @RequestBody MenuItem menuItem) {
+        return menuItemService.findById(id)
+                .map(existing -> {
+                    menuItem.setId(id);
+                    MenuItem updated = menuItemService.save(menuItem);
+                    return ResponseEntity.ok(updated);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/menu/{id}")
+    public ResponseEntity<Void> deleteMenuItem(@PathVariable Long id) {
+        if (menuItemService.findById(id).isPresent()) {
+            menuItemService.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 } 
