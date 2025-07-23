@@ -1,105 +1,64 @@
 # Backend Cafeteria - Spring Boot + Auth0
 
-Este es un proyecto backend desarrollado con Spring Boot que implementa autenticación con Auth0.
+Este proyecto es el backend de una aplicación de cafetería, desarrollado con Spring Boot. Permite la gestión de menú y pedidos, implementa autenticación y autorización basada en Auth0, y define roles de acceso para distintos tipos de usuario.
 
 ## Características
 
-- ✅ Spring Boot 3.5.3
-- ✅ Spring Security con OAuth2
-- ✅ Autenticación con Auth0
-- ✅ Rutas públicas y protegidas
-- ✅ CORS configurado
-- ✅ Manejo de excepciones global
+- Spring Boot 3.5.3
+- Spring Security con OAuth2 y Auth0
+- Gestión de menú y pedidos
+- Roles: ADMIN, BARISTA, CLIENTE
+- Base de datos MySQL
+- Manejo global de excepciones
 
-## Rutas Disponibles
+## Base de Datos
 
-### Rutas Públicas (sin autenticación)
+El sistema utiliza MySQL como base de datos relacional. La configuración de conexión (URL, usuario, contraseña) se encuentra en el archivo `src/main/resources/application.properties`. El esquema se actualiza automáticamente mediante JPA/Hibernate.
 
-- `GET /` - Página principal
-- `GET /public` - Ruta pública general
-- `GET /api/public` - Ruta pública de API
-- `GET /api/public/health` - Health check
+## Instrucciones de Ejecución
 
-### Rutas Privadas (requieren token Auth0)
+1. Configura la base de datos MySQL y actualiza las credenciales en `application.properties`.
+2. Instala las dependencias con Maven.
+3. Ejecuta la aplicación con Maven.
 
-- `GET /private` - Ruta privada general
-- `GET /private/profile` - Perfil del usuario
-- `GET /api/private` - Ruta privada de API
+El backend se ejecuta por defecto en `http://localhost:8080`.
 
-## Configuración de Auth0
+## Endpoints Principales
 
-1. Crea una cuenta en [Auth0](https://auth0.com)
-2. Crea una nueva aplicación (Single Page Application)
-3. Configura las URLs permitidas:
+### Públicos (no requieren autenticación)
 
-   - Allowed Callback URLs: `http://localhost:3000/callback`
-   - Allowed Logout URLs: `http://localhost:3000`
-   - Allowed Web Origins: `http://localhost:3000`
+- `GET /public` — Información general pública
+- `GET /public/menu` — Consulta el menú disponible
+- `GET /api/public/health` — Health check del servicio
 
-4. Actualiza el archivo `src/main/resources/application.properties`:
+### Privados (requieren autenticación Auth0)
 
-```properties
-# Auth0 Configuration
-auth0.audience=https://your-domain.auth0.com/api/v2/
-auth0.issuer=https://your-domain.auth0.com/
-auth0.secret=your-auth0-secret
-```
+#### Menú (solo ADMIN)
 
-Reemplaza:
+- `GET /private/menu` — Listar todos los ítems del menú
+- `POST /private/menu` — Crear un nuevo ítem de menú
+- `PUT /private/menu/{id}` — Actualizar un ítem de menú
+- `DELETE /private/menu/{id}` — Eliminar un ítem de menú
 
-- `your-domain` con tu dominio de Auth0
-- `your-auth0-secret` con el secret de tu aplicación
+#### Pedidos
 
-## Ejecutar el Proyecto
+- `POST /private/orders` — Crear pedido (CLIENTE)
+- `GET /private/orders/my` — Ver pedidos propios (CLIENTE)
+- `GET /private/orders` — Ver todos los pedidos (BARISTA, ADMIN)
+- `PUT /private/orders/{id}/status` — Actualizar estado de pedido (BARISTA, ADMIN)
 
-```bash
-# Compilar el proyecto
-mvn clean compile
+#### Otros
 
-# Ejecutar en modo desarrollo
-mvn spring-boot:run
-```
+- `GET /private` — Ruta privada general (cualquier usuario autenticado)
+- `GET /private/profile` — Perfil del usuario autenticado
 
-El servidor se ejecutará en `http://localhost:8080`
+## Roles y Permisos
 
-## Probar las APIs
+- **ADMIN:** Acceso total a la gestión de menú y pedidos.
+- **BARISTA:** Puede ver y actualizar el estado de todos los pedidos.
+- **CLIENTE:** Puede crear pedidos y ver solo sus propios pedidos. Acceso de solo lectura al menú público.
 
-### Rutas Públicas
+## Notas
 
-```bash
-# Health check
-curl http://localhost:8080/api/public/health
-
-# Ruta pública
-curl http://localhost:8080/api/public
-```
-
-### Rutas Privadas
-
-```bash
-# Necesitas un token válido de Auth0
-curl -H "Authorization: Bearer YOUR_AUTH0_TOKEN" http://localhost:8080/api/private
-```
-
-## Estructura del Proyecto
-
-```
-src/main/java/com/mati/curso/springboot/webapp/backendcafeteria/
-├── BackendCafeteriaApplication.java
-├── config/
-│   ├── Auth0Properties.java
-│   └── SecurityConfig.java
-├── controllers/
-│   ├── ApiController.java
-│   ├── PublicController.java
-│   └── PrivateController.java
-└── exceptions/
-    └── GlobalExceptionHandler.java
-```
-
-## Próximos Pasos
-
-1. Configurar Auth0 con tus credenciales
-2. Desarrollar el frontend que consumirá estas APIs
-3. Agregar más funcionalidades específicas de la cafetería
-4. Implementar base de datos y modelos de datos
+- La autenticación y autorización se realiza mediante Auth0. Configura tus credenciales en `application.properties`.
+- El frontend debe consumir estos endpoints usando tokens válidos de Auth0.
