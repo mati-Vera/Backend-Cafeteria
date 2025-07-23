@@ -2,6 +2,8 @@ package com.mati.curso.springboot.webapp.backendcafeteria.service;
 
 import com.mati.curso.springboot.webapp.backendcafeteria.entity.Order;
 import com.mati.curso.springboot.webapp.backendcafeteria.repository.OrderRepository;
+import com.mati.curso.springboot.webapp.backendcafeteria.service.MenuItemService;
+import com.mati.curso.springboot.webapp.backendcafeteria.entity.MenuItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,13 +13,29 @@ import java.util.Optional;
 @Service
 public class OrderService {
     private final OrderRepository orderRepository;
+    private final MenuItemService menuItemService;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository, MenuItemService menuItemService) {
         this.orderRepository = orderRepository;
+        this.menuItemService = menuItemService;
     }
 
     public Order save(Order order) {
+        double total = 0.0;
+        if (order.getItems() != null) {
+            for (var item : order.getItems()) {
+                item.setOrder(order);
+                if (item.getMenuItem() != null && item.getMenuItem().getId() != null) {
+                    MenuItem menuItem = menuItemService.findById(item.getMenuItem().getId())
+                        .orElseThrow(() -> new RuntimeException("MenuItem no encontrado"));
+                    item.setMenuItem(menuItem);
+                    item.setPrice(menuItem.getPrice()); // Setea el precio real
+                    total += menuItem.getPrice() * item.getQuantity();
+                }
+            }
+        }
+        order.setTotal(total);
         return orderRepository.save(order);
     }
 

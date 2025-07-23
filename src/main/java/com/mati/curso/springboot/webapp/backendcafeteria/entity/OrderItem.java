@@ -1,10 +1,13 @@
 package com.mati.curso.springboot.webapp.backendcafeteria.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.mati.curso.springboot.webapp.backendcafeteria.entity.MenuItem;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "order_items")
+@JsonIgnoreProperties(value = {"price"}, allowGetters = true)
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -12,6 +15,7 @@ public class OrderItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
+    @JsonBackReference
     private Order order;
 
     @ManyToOne(fetch = FetchType.EAGER)
