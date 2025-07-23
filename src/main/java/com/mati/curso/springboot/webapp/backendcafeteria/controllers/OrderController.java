@@ -53,16 +53,23 @@ public class OrderController {
     // PUT /private/orders/{id}/status (BARISTA o ADMIN)
     @PreAuthorize("hasAnyRole('BARISTA','ADMIN')")
     @PutMapping("/{id}/status")
-    public ResponseEntity<Order> updateOrderStatus(@PathVariable Long id, @RequestBody String status) {
+    public ResponseEntity<Order> updateOrderStatus(@PathVariable Long id, @RequestBody StatusUpdateRequest statusUpdate) {
         Optional<Order> orderOpt = orderService.findById(id);
         if (orderOpt.isPresent()) {
             Order order = orderOpt.get();
-            order.setStatus(status);
+            order.setStatus(statusUpdate.getStatus());
             order.setUpdatedAt(LocalDateTime.now());
             Order updated = orderService.save(order);
             return ResponseEntity.ok(updated);
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    // DTO para recibir el status
+    public static class StatusUpdateRequest {
+        private String status;
+        public String getStatus() { return status; }
+        public void setStatus(String status) { this.status = status; }
     }
 } 
