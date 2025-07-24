@@ -1,5 +1,68 @@
 # Backend Cafeteria - Spring Boot + Auth0
 
+## Instrucciones para clonar y ejecutar el proyecto
+
+### Requisitos previos
+
+- Java 17 o superior
+- Maven 3.8+
+- MySQL (o MariaDB) corriendo localmente
+- (Opcional) Postman o similar para probar la API
+
+### Pasos para clonar y ejecutar
+
+1. **Clona el repositorio:**
+
+   ```sh
+   git clone <URL_DEL_REPO>
+   cd Backend-Cafeteria
+   ```
+
+2. **Configura la base de datos:**
+
+   - Crea una base de datos llamada `cafeteria` en tu MySQL local.
+   - Edita `src/main/resources/application.properties` y ajusta:
+     - `spring.datasource.username` (usuario de MySQL)
+     - `spring.datasource.password` (contraseña de MySQL)
+
+3. **Configura Auth0:**
+
+   - Completa los valores de Auth0 en `application.properties`:
+     - `auth0.domain`, `auth0.clientId`, `auth0.clientSecret`, `auth0.audience`, `auth0.baristaRoleId`
+
+4. **Instala dependencias y compila:**
+
+   ```sh
+   ./mvnw clean install
+   ```
+
+   o si usas Windows:
+
+   ```sh
+   mvnw.cmd clean install
+   ```
+
+5. **Ejecuta la aplicación:**
+
+   ```sh
+   ./mvnw spring-boot:run
+   ```
+
+   o en Windows:
+
+   ```sh
+   mvnw.cmd spring-boot:run
+   ```
+
+6. **La API estará disponible en:**
+
+   - `http://localhost:8080`
+
+7. **Prueba la API:**
+   - Usa Postman, Insomnia o el frontend para probar los endpoints.
+
+---
+
 Este proyecto es el backend de una aplicación de cafetería, desarrollado con Spring Boot. Permite la gestión de menú y pedidos, implementa autenticación y autorización basada en Auth0, y define roles de acceso para distintos tipos de usuario.
 
 ## Características
