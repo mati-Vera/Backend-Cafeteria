@@ -47,6 +47,7 @@ public class Auth0Service {
         body.put("password", password);
         body.put("connection", "Username-Password-Authentication");
         body.put("email_verified", false);
+        body.put("app_metadata", Map.of("created_by_admin", true));
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
         ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
         return response.getBody();
