@@ -50,35 +50,4 @@ public class AdminUsuarioController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/sync-auth0")
-    public ResponseEntity<String> syncAuth0Users() {
-        List<java.util.Map<String, Object>> users = auth0Service.getAllAuth0Users();
-        int creados = 0;
-        for (var user : users) {
-            String auth0Id = (String) user.get("user_id");
-            String email = (String) user.get("email");
-            String nombre = (String) user.getOrDefault("name", email);
-            // Roles personalizados pueden estar en app_metadata o en los claims, aquí asumimos cliente por defecto
-            String rol = "CLIENTE";
-            if (user.containsKey("app_metadata")) {
-                var appMeta = (java.util.Map<String, Object>) user.get("app_metadata");
-                if (appMeta != null && appMeta.containsKey("roles")) {
-                    var roles = appMeta.get("roles");
-                    if (roles instanceof List && !((List<?>) roles).isEmpty()) {
-                        rol = ((List<?>) roles).get(0).toString().toUpperCase();
-                    }
-                }
-            }
-            if (personaRepository.findByAuth0Id(auth0Id).isEmpty()) {
-                Persona p = new Persona();
-                p.setAuth0Id(auth0Id);
-                p.setEmail(email);
-                p.setNombre(nombre);
-                p.setRol(rol);
-                personaRepository.save(p);
-                creados++;
-            }
-        }
-        return ResponseEntity.ok("Usuarios sincronizados. Nuevos creados: " + creados);
-    }
 } 
