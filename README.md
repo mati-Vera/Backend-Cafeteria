@@ -15,6 +15,14 @@ Este proyecto es el backend de una aplicación de cafetería, desarrollado con S
 
 El sistema utiliza MySQL como base de datos relacional. La configuración de conexión (URL, usuario, contraseña) se encuentra en el archivo `src/main/resources/application.properties`. El esquema se actualiza automáticamente mediante JPA/Hibernate.
 
+## Lógica de Sincronización de Usuarios y Roles
+
+- Cuando un usuario accede al backend con un token JWT de Auth0, se extraen los datos básicos (ID, nombre, email) y el **rol** directamente de los claims del token.
+- El rol se obtiene del claim personalizado: `https://cafeteria.com/roles` (primer valor del array).
+- Si el claim de roles no existe o está vacío, se asigna el rol por defecto `CLIENTE`.
+- **No se consulta la API de Auth0** para obtener ni actualizar roles o metadatos.
+- La base de datos se mantiene sincronizada con los datos del usuario cada vez que accede con un token válido.
+
 ## Instrucciones de Ejecución
 
 1. Configura la base de datos MySQL y actualiza las credenciales en `application.properties`.
@@ -51,6 +59,7 @@ El backend se ejecuta por defecto en `http://localhost:8080`.
 
 - `GET /private` — Ruta privada general (cualquier usuario autenticado)
 - `GET /private/profile` — Perfil del usuario autenticado
+- `GET /api/me` — Sincroniza y devuelve los datos del usuario autenticado
 
 ## Roles y Permisos
 
@@ -60,5 +69,6 @@ El backend se ejecuta por defecto en `http://localhost:8080`.
 
 ## Notas
 
-- La autenticación y autorización se realiza mediante Auth0. Configura tus credenciales en `application.properties`.
+- La autenticación y autorización se realiza mediante Auth0. El rol se extrae del claim `https://cafeteria.com/roles` del JWT.
+- El backend ya no consulta la API de Auth0 para roles ni metadatos.
 - El frontend debe consumir estos endpoints usando tokens válidos de Auth0.

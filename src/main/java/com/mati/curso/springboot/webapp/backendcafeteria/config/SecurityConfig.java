@@ -20,8 +20,8 @@ import java.util.Arrays;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private Auth0Properties auth0Properties;
+    // @Autowired
+    // private Auth0Properties auth0Properties;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -45,8 +45,8 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withJwkSetUri(auth0Properties.getIssuer() + ".well-known/jwks.json")
-                .build();
+        // Cambia el issuer por un valor fijo o deja un comentario para configuración futura
+        return NimbusJwtDecoder.withJwkSetUri("https://dev-vxui3mkjgul4co4v.us.auth0.com/.well-known/jwks.json").build();
     }
 
     @Bean

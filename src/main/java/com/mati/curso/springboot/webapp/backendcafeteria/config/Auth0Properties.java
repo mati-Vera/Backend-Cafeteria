@@ -25,7 +25,6 @@ public class Auth0Properties {
     public void setIssuer(String issuer) {
         this.issuer = issuer;
     }
-
     public String getSecret() {
         return secret;
     }
