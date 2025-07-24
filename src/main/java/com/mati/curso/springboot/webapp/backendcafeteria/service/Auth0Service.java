@@ -64,4 +64,40 @@ public class Auth0Service {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
         restTemplate.postForEntity(url, entity, Void.class);
     }
+
+    public List<Map<String, Object>> getAllAuth0Users() {
+        String url = "https://" + domain + "/api/v2/users";
+        String token = getManagementApiToken();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        List<Map<String, Object>> allUsers = new ArrayList<>();
+        int page = 0;
+        int perPage = 100;
+        boolean hasMore = true;
+        while (hasMore) {
+            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
+                .queryParam("page", page)
+                .queryParam("per_page", perPage);
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+            ResponseEntity<List> response = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                entity,
+                List.class
+            );
+            List<Map<String, Object>> users = response.getBody();
+            if (users == null || users.isEmpty()) {
+                hasMore = false;
+            } else {
+                allUsers.addAll(users);
+                if (users.size() < perPage) {
+                    hasMore = false;
+                } else {
+                    page++;
+                }
+            }
+        }
+        return allUsers;
+    }
 } 

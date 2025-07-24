@@ -2,12 +2,12 @@ package com.mati.curso.springboot.webapp.backendcafeteria.controllers;
 
 import com.mati.curso.springboot.webapp.backendcafeteria.entity.Persona;
 import com.mati.curso.springboot.webapp.backendcafeteria.repository.PersonaRepository;
-// import com.mati.curso.springboot.webapp.backendcafeteria.service.Auth0RoleService;
-// import com.mati.curso.springboot.webapp.backendcafeteria.service.Auth0UserMetadataService;
+import com.mati.curso.springboot.webapp.backendcafeteria.service.Auth0Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -15,10 +15,8 @@ import java.util.Optional;
 public class AdminUsuarioController {
     @Autowired
     private PersonaRepository personaRepository;
-    // @Autowired
-    // private Auth0RoleService auth0RoleService;
-    // @Autowired
-    // private Auth0UserMetadataService auth0UserMetadataService;
+    @Autowired
+    private Auth0Service auth0Service;
 
     // Elimino el endpoint de cambio de rol porque la sincronización con Auth0 no se usará
 
@@ -50,5 +48,37 @@ public class AdminUsuarioController {
         return personaRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/sync-auth0")
+    public ResponseEntity<String> syncAuth0Users() {
+        List<java.util.Map<String, Object>> users = auth0Service.getAllAuth0Users();
+        int creados = 0;
+        for (var user : users) {
+            String auth0Id = (String) user.get("user_id");
+            String email = (String) user.get("email");
+            String nombre = (String) user.getOrDefault("name", email);
+            // Roles personalizados pueden estar en app_metadata o en los claims, aquí asumimos cliente por defecto
+            String rol = "CLIENTE";
+            if (user.containsKey("app_metadata")) {
+                var appMeta = (java.util.Map<String, Object>) user.get("app_metadata");
+                if (appMeta != null && appMeta.containsKey("roles")) {
+                    var roles = appMeta.get("roles");
+                    if (roles instanceof List && !((List<?>) roles).isEmpty()) {
+                        rol = ((List<?>) roles).get(0).toString().toUpperCase();
+                    }
+                }
+            }
+            if (personaRepository.findByAuth0Id(auth0Id).isEmpty()) {
+                Persona p = new Persona();
+                p.setAuth0Id(auth0Id);
+                p.setEmail(email);
+                p.setNombre(nombre);
+                p.setRol(rol);
+                personaRepository.save(p);
+                creados++;
+            }
+        }
+        return ResponseEntity.ok("Usuarios sincronizados. Nuevos creados: " + creados);
     }
 } 
