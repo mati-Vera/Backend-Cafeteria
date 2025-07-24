@@ -61,6 +61,16 @@ El backend se ejecuta por defecto en `http://localhost:8080`.
 - `GET /private/profile` — Perfil del usuario autenticado
 - `GET /api/me` — Sincroniza y devuelve los datos del usuario autenticado
 
+### Usuarios y Baristas
+
+- `GET /private/users?role=barista` — Listar todos los baristas (solo ADMIN). Devuelve: id, email, name, roles.
+- `POST /private/users` — Crear un barista (solo ADMIN). Recibe email y password, crea el usuario en Auth0 y le asigna solo el rol BARISTA.
+
+### Pedidos (mejoras)
+
+- En cada ítem de pedido (`OrderItem`), la respuesta incluye el campo `menuItemName` con el nombre del producto.
+- En cada pedido (`Order`), la respuesta incluye el campo `customerEmail` con el correo del cliente.
+
 ## Roles y Permisos
 
 - **ADMIN:** Acceso total a la gestión de menú y pedidos.
@@ -72,3 +82,8 @@ El backend se ejecuta por defecto en `http://localhost:8080`.
 - La autenticación y autorización se realiza mediante Auth0. El rol se extrae del claim `https://cafeteria.com/roles` del JWT.
 - El backend ya no consulta la API de Auth0 para roles ni metadatos.
 - El frontend debe consumir estos endpoints usando tokens válidos de Auth0.
+
+## Integración y lógica de roles con Auth0
+
+- Los baristas creados desde el backend se registran en Auth0 y reciben solo el rol BARISTA (no CLIENTE), gracias a la lógica de `app_metadata` y un script de post-registration en Auth0.
+- El frontend puede consumir los endpoints de usuarios/baristas y pedidos de forma directa y sencilla, mostrando nombres de productos y correos de clientes sin lógica adicional.
