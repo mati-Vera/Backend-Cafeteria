@@ -87,3 +87,11 @@ El backend se ejecuta por defecto en `http://localhost:8080`.
 
 - Los baristas creados desde el backend se registran en Auth0 y reciben solo el rol BARISTA (no CLIENTE), gracias a la lógica de `app_metadata` y un script de post-registration en Auth0.
 - El frontend puede consumir los endpoints de usuarios/baristas y pedidos de forma directa y sencilla, mostrando nombres de productos y correos de clientes sin lógica adicional.
+
+## Sincronización de usuarios desde el frontend
+
+Después de que un usuario inicia sesión (login/signup), el frontend debe hacer una petición autenticada a `/api/me` en el backend. Esto asegura que el usuario quede registrado y sincronizado en la base de datos local del backend antes de realizar pedidos u otras acciones privadas.
+
+Si el usuario ya existe, simplemente se actualiza. Si es nuevo, se crea automáticamente.
+
+> **Nota:** Esta sincronización funciona para todos los roles: cliente, barista y admin. Cualquier usuario autenticado que llame a `/api/me` será registrado o actualizado en la base local, sin importar su rol.
